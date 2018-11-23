@@ -1,0 +1,17 @@
+# for vscode
+.vscode
+
+# for Mac
+.DS_Store
+
+
+# for sample
+sample/*
+
+
+# cache
+__pycache__/
+
+
+# For test
+event.json
