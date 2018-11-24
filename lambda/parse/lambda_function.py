@@ -15,7 +15,7 @@ def lambda_handler(event, context):
     severity = 'severity=important'
     
     # Build URL
-    url = base_url + endpoint + date + "&" + "&" + severity
+    url = base_url + endpoint + date + "&" + severity
     #data = get_data(endpoint + '?' + params)
 
     res = requests.get(url)
@@ -30,14 +30,17 @@ def lambda_handler(event, context):
     sec_list = []
     tmp_list = []
 
+    secdict = {}
+
     for x in data:
         detail = requests.get(x['resource_url'] ,timeout=10)
 
-        # To check Kenel updata:
-        package = x['released_packages']
-
-        if 'kernel' in package:
-            print('This is a kernel update.')
+        # exclude kernel packages.
+        packages = x['released_packages']
+        for package in packages:
+            if "kernel" in package:
+                print(package + ' is kernel package.')
+                break            
 
         if detail.json()['cvrfdoc']['document_type'] == 'Security Advisory':
             
@@ -56,4 +59,5 @@ def lambda_handler(event, context):
         else:
             print('Not Security Severity.')
 
-    return json.dumps(sec_list)
+    #return json.dumps(sec_list)
+    return sec_list
