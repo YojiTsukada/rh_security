@@ -2,6 +2,22 @@ import os
 import requests
 import json
 import base64
+import boto3
+import datetime
+
+# for time Environment
+now = datetime.datetime.now()
+file_name = (now.strftime("%Y%m%d%H%M%S"))
+file_name = file_name + '.json'
+
+
+# Write on S3
+def write_s3(json_file):
+    s3 = boto3.resource('s3')
+    bucket_name = 'rhsecurity-dump'
+    bucket = s3.Bucket(bucket_name)
+    bucket.upload_file(json_file, file_name)
+    return 
 
 
 def lambda_handler(event, context):
@@ -56,5 +72,12 @@ def lambda_handler(event, context):
             
         else:
             print(x['RHSA'] + ' is Not Security Severity.')
+
+    # Save json file
+    with open('security.json', 'w') as f:
+        json.dump(sec_dict, f)
+
+    # Write S3
+    write_s3('security.json')
 
     return json.dumps(sec_dict)

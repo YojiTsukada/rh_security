@@ -15,6 +15,12 @@ pip install lxml
 
 # Web Driverをインストール　（不要)
 pip install selenium
+
+# boto3 をインストール
+pip install boto3
+
+＃aws cliをインストール
+pip install awscli
 ```
 
 
