@@ -26,11 +26,9 @@ def lambda_handler(event, context):
         print('No updated.')
         return None
 
-    # initalize for lists
-    sec_list = []
-    tmp_list = []
-
-    secdict = {}
+    # Initialize
+    sec_dict = {}
+    count = 0
 
     for x in data:
         detail = requests.get(x['resource_url'] ,timeout=10)
@@ -39,25 +37,24 @@ def lambda_handler(event, context):
         packages = x['released_packages']
         for package in packages:
             if "kernel" in package:
-                print(package + ' is kernel package.')
+                print(x['RHSA'] + ' include kernel package. ' + package)
                 break            
 
+        # Only Security Advisory documents.
         if detail.json()['cvrfdoc']['document_type'] == 'Security Advisory':
             
-            # build temporary list.
-            tmp_list.append(x['RHSA'])
-            tmp_list.append(detail.json()['cvrfdoc']['document_title'])
-            tmp_list.append(detail.json()['cvrfdoc']['document_notes']['note'])
-            tmp_list.append(detail.json()['cvrfdoc']['document_references']['reference'][0]['url'])
-            tmp_list.append(x['released_on']) 
-            tmp_list.append(x['CVEs']) 
+            # Build Security Dictionary
+            sec_dict[count] = {}
+            sec_dict[count]['RHSA'] = x['RHSA']
+            sec_dict[count]['document_title'] = detail.json()['cvrfdoc']['document_title']
+            sec_dict[count]['note'] = detail.json()['cvrfdoc']['document_notes']['note']
+            sec_dict[count]['CVEs'] = x['CVEs']
+            sec_dict[count]['released_on'] = x['released_on']
+            sec_dict[count]['url'] = detail.json()['cvrfdoc']['document_references']['reference'][0]['url']
 
-            # merge.
-            sec_list.append(tmp_list)
-            tmp_list = []
-
+            count += 1
+            
         else:
-            print('Not Security Severity.')
+            print(x['RHSA'] + ' is Not Security Severity.')
 
-    #return json.dumps(sec_list)
-    return sec_list
+    return json.dumps(sec_dict)
