@@ -10,7 +10,6 @@ now = datetime.datetime.now()
 file_name = (now.strftime("%Y%m%d%H%M%S"))
 file_name = file_name + '.json'
 
-
 # Write on S3
 def write_s3(json_file):
     s3 = boto3.resource('s3')
