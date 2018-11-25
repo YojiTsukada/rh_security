@@ -13,3 +13,6 @@ __pycache__/
 # For test
 event.json
 security.json
+
+# for lambda-uploader
+lambda.json

@@ -7,8 +7,8 @@ import datetime
 
 # for time Environment
 now = datetime.datetime.now()
-file_name = (now.strftime("%Y%m%d%H%M%S"))
-file_name = file_name + '.json'
+dateformat = (now.strftime("%Y%m%d%H%M%S"))
+file_name = dateformat + '.json'
 
 # Write on S3
 def write_s3(json_file):
@@ -73,10 +73,10 @@ def lambda_handler(event, context):
             print(x['RHSA'] + ' is Not Security Severity.')
 
     # Save json file
-    with open('security.json', 'w') as f:
+    with open('/tmp/' + '_security.json', 'w') as f:
         json.dump(sec_dict, f)
 
     # Write S3
-    write_s3('security.json')
+    write_s3('/tmp/' + '_security.json')
 
     return json.dumps(sec_dict)
