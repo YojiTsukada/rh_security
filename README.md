@@ -21,6 +21,12 @@ pip install boto3
 
 ＃aws cliをインストール
 pip install awscli
+
+# bottle をインストール(template engine for send mail)
+pip install bottle
+
+# jinja2 をインストール
+pip install jinja2
 ```
 
 

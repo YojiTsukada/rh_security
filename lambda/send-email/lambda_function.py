@@ -1,6 +1,9 @@
 import boto3
 import json
 import os
+import bottle
+from jinja2 import Environment, FileSystemLoader
+import ast
 
 client = boto3.client('ses',region_name='us-east-1')
 
@@ -24,28 +27,51 @@ def send_email(source, to, subject, body):
             }
         }
     )
-
     return response
 
-# Read mail template from S3 bucket.
-def read_template():
+
+def replacement_mail(bucket,key):
+
+    # To set S3 clients.
     s3 = boto3.client('s3')
-    bucket_name = 'rhsecurity-template'
-    file_name = 'rhsecurity-mailtemp.txt' 
-    
+
+    # read template
+    template = './rhsecurity-mailtemp.txt'
+
+    # 
+    env = Environment(loader=FileSystemLoader('./', encoding='utf8'))
+    tpl = env.get_template(template)
+
     # get S3 object.
-    response = s3.get_object(Bucket=bucket_name, Key=file_name)
-    body = response['Body'].read()
+    response = s3.get_object(Bucket=bucket, Key=key)
+    content = response['Body'].read().decode('utf-8')
+    data = json.loads(content)
 
-    # decode to utf-8
-    bodystr = body.decode('utf-8')
+    print(type(data))
+    
+    lists = []
 
-    return bodystr
+    print(data)
+    for num in data:
+        lists.append(data[num])
+
+    body = tpl.render({'lists':lists})
+
+    return body
 
 def lambda_handler(event, context):
-    from_address = event['address']
-    subject = "Secuirty Information."
-    dest_address = event['address']
+    
+    print(event)
+    # To Set Environments.
+    from_address = os.environ['FROM_MAIL_ADDR']
+    subject = "RedHat / CentOS Secuirty Information."
+    dest_address = os.environ['TO_MAIL_ADDR']
+
+    # S3 Bucket (update json.)
+    bucket = event['Records'][0]['s3']['bucket']['name']
+    key = str(event['Records'][0]['s3']['object']['key'])
+
     # send mail
-    r = send_email(from_address, dest_address, subject, read_template())
+    send_email(from_address, dest_address, subject, replacement_mail(bucket,key))
+    
     return 

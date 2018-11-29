@@ -26,7 +26,7 @@ def lambda_handler(event, context):
     
     # Parameter
     endpoint = 'cvrf.json?'
-    date = "after=2018-11-20"
+    date = "after=2018-11-26"
     severity = 'severity=important'
     
     # Build URL
