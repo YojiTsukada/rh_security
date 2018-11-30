@@ -26,7 +26,7 @@ def lambda_handler(event, context):
     
     # Parameter
     endpoint = 'cvrf.json?'
-    date = "after=2018-11-26"
+    date = "after=2018-11-28"
     severity = 'severity=important'
     
     # Build URL
@@ -53,24 +53,43 @@ def lambda_handler(event, context):
         for package in packages:
             if "kernel" in package:
                 print(x['RHSA'] + ' include kernel package. ' + package)
-                break            
+            continue
+
+
 
         # Only Security Advisory documents.
         if detail.json()['cvrfdoc']['document_type'] == 'Security Advisory':
             
-            # Build Security Dictionary
-            sec_dict[count] = {}
-            sec_dict[count]['RHSA'] = x['RHSA']
-            sec_dict[count]['document_title'] = detail.json()['cvrfdoc']['document_title']
-            sec_dict[count]['note'] = detail.json()['cvrfdoc']['document_notes']['note']
-            sec_dict[count]['CVEs'] = x['CVEs']
-            sec_dict[count]['released_on'] = x['released_on']
-            sec_dict[count]['url'] = detail.json()['cvrfdoc']['document_references']['reference'][0]['url']
+            # Only Redhat Linux Products.
+            products = (detail.json()['cvrfdoc']['product_tree']['branch'][0]['branch'])
 
-            count += 1
-            
-        else:
-            print(x['RHSA'] + ' is Not Security Severity.')
+            # To initialize flag param.
+            flag = ""
+
+            # Set flag only RedHat Enterprise Linux prouct.
+            for product in products:
+                if product['full_product_name'] == 'Red Hat Enterprise Linux Server (v. 7)':
+                    print(product['full_product_name'] + " is muched." + x['RHSA'])
+                    flag = 1
+                    break
+                
+            # flag = 1 merged.   
+            if flag == 1 :
+
+                # Build Security Dictionary
+                sec_dict[count] = {}
+                sec_dict[count]['RHSA'] = x['RHSA']
+                sec_dict[count]['document_title'] = detail.json()['cvrfdoc']['document_title']
+                sec_dict[count]['note'] = detail.json()['cvrfdoc']['document_notes']['note']
+                sec_dict[count]['CVEs'] = x['CVEs']
+                sec_dict[count]['released_on'] = x['released_on']
+                sec_dict[count]['url'] = detail.json()['cvrfdoc']['document_references']['reference'][0]['url']
+
+                count += 1
+                
+            else:
+                print(x['RHSA'] + ' is not Redhat Linux product.')
+
 
     # Save json file
     with open('/tmp/' + '_security.json', 'w') as f:
