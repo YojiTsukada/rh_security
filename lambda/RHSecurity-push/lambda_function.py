@@ -26,7 +26,7 @@ def lambda_handler(event, context):
     
     # Parameter
     endpoint = 'cvrf.json?'
-    date = "after=2018-11-28"
+    date = "after=2018-11-20"
     severity = 'severity=important'
     
     # Build URL
@@ -48,33 +48,41 @@ def lambda_handler(event, context):
     for x in data:
         detail = requests.get(x['resource_url'] ,timeout=10)
 
-        # exclude kernel packages.
-        packages = x['released_packages']
-        for package in packages:
-            if "kernel" in package:
-                print(x['RHSA'] + ' include kernel package. ' + package)
-            continue
-
-
-
         # Only Security Advisory documents.
         if detail.json()['cvrfdoc']['document_type'] == 'Security Advisory':
-            
-            # Only Redhat Linux Products.
-            products = (detail.json()['cvrfdoc']['product_tree']['branch'][0]['branch'])
 
             # To initialize flag param.
+            kernel = ""
             flag = ""
 
+            # exclude kernel packages.
+            packages = x['released_packages']
+            for package in packages:
+                if "kernel" in package:
+                    print(x['RHSA'] + ' include kernel package. ' + package)
+                    kernel = 1
+                    break
+
+            # Only Redhat Linux Products.
+            products = (detail.json()['cvrfdoc']['product_tree']['branch'][0]['branch'])
+                        
             # Set flag only RedHat Enterprise Linux prouct.
             for product in products:
+                
+                # To escape that product is strings.
+                if isinstance(product, str):
+                    break
+                
+                # Only Red Hat Enterprise Linux Product.
                 if product['full_product_name'] == 'Red Hat Enterprise Linux Server (v. 7)':
                     print(product['full_product_name'] + " is muched." + x['RHSA'])
                     flag = 1
                     break
-                
+                else:
+                    flag = 0
+            
             # flag = 1 merged.   
-            if flag == 1 :
+            if flag == 1 and not kernel == 1:
 
                 # Build Security Dictionary
                 sec_dict[count] = {}
@@ -87,6 +95,7 @@ def lambda_handler(event, context):
 
                 count += 1
                 
+                print(x['RHSA'] + ' is merged.')
             else:
                 print(x['RHSA'] + ' is not Redhat Linux product.')
 
