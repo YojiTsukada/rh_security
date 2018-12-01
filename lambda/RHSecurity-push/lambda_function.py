@@ -88,8 +88,9 @@ def lambda_handler(event, context):
                 sec_dict[count] = {}
                 sec_dict[count]['RHSA'] = x['RHSA']
                 sec_dict[count]['document_title'] = detail.json()['cvrfdoc']['document_title']
-                sec_dict[count]['note'] = detail.json()['cvrfdoc']['document_notes']['note']
-                sec_dict[count]['CVEs'] = x['CVEs']
+                sec_dict[count]['note'] = ','.join(detail.json()['cvrfdoc']['document_notes']['note'])
+                sec_dict[count]['released_packages'] = ','.join(x['released_packages'])
+                sec_dict[count]['CVEs'] = ','.join(x['CVEs'])
                 sec_dict[count]['released_on'] = x['released_on']
                 sec_dict[count]['url'] = detail.json()['cvrfdoc']['document_references']['reference'][0]['url']
 
